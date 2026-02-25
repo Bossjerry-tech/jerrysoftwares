@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanaka Oasis MIS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                   FanakaOasisLuxeHome MIS</h1>
+                <p class="text-slate-400 text-sm">Real-time Property Analytics & Financial Tracking</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="filterStatus('All')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">All</button>
+                <button onclick="filterStatus('Booked')" class="bg-green-900/50 text-green-400 px-3 py-1 rounded text-xs transition border border-green-800">Booked</button>
+                <button onclick="filterStatus('Available')" class="bg-amber-900/50 text-amber-400 px-3 py-1 rounded text-xs transition border border-amber-800">Available</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Total Assets</p>
+                <h2 id="stat-total" class="text-3xl font-bold">0</h2>
+            </div>
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Gross Revenue</p>
+                <h2 id="stat-rev" class="text-3xl font-bold text-emerald-400">$0</h2>
+            </div>
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Total Expenses</p>
+                <h2 id="stat-exp" class="text-3xl font-bold text-red-400">$0</h2>
+            </div>
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Net Profit</p>
+                <h2 id="stat-profit" class="text-3xl font-bold text-blue-400">$0</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 h-fit shadow-2xl">
+                <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+                    Entry Console
+                </h3>
+                <form id="prop-form" class="space-y-5">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-400 ml-1">Property Name</label>
+                        <select id="name" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                            <option value="" disabled selected>Select an asset...</option>
+                            <option value="Royal Oaks A1-2">Royal Oaks A1-2</option>
+                            <option value="Royal Oaks A12-1">Royal Oaks A12-1</option>
+                            <option value="Royal Oaks A16-1">Royal Oaks A16-1</option>
+                            <option value="Skyline Apartments">Skyline Apartments</option>
+                            <option value="Myra Residency">Myra Residency</option>
+                            <option value="Platinum Oak Residency B8">Platinum Oak Residency B8</option>
+                            <option value="Platinum Oak Residency B14-2">Platinum Oak Residency B14-2</option>
+                            <option value="Antalya Apartment">Antalya Apartment</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-400 ml-1">Revenue ($)</label>
+                            <input type="number" id="price" placeholder="Amount In" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-400 ml-1">Expense ($)</label>
+                            <input type="number" id="expense" placeholder="Amount Out" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-slate-400 ml-1">Current Status</label>
+                        <select id="status" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1">
+                            <option value="Available">Available</option>
+                            <option value="Booked">Booked</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-slate-400 ml-1">Activity Notes</label>
+                        <textarea id="notes" placeholder="Reason for expense or booking details..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 h-24 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/40 transition-all active:scale-95">
+                        Sync Transaction
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-8 bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-widest border-b border-slate-700">
+                            <tr>
+                                <th class="p-5">Asset Detail</th>
+                                <th class="p-5 text-center">Status</th>
+                                <th class="p-5 text-right">Net Cashflow</th>
+                                <th class="p-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-700/50">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE SETUP - Replace with your sister's Firebase project keys
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentFilter = 'All';
+
+        const form = document.getElementById('prop-form');
+        const tableBody = document.getElementById('table-body');
+
+        // CRUD: Create (Write to Database)
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                expense: parseFloat(document.getElementById('expense').value) || 0,
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection('properties').add(data);
+            form.reset();
+        });
+
+        // CRUD: Read (Real-time listener)
+        function fetchAndRender() {
+            db.collection('properties').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                renderTable(snapshot);
+            });
+        }
+
+        function filterStatus(status) {
+            currentFilter = status;
+            db.collection('properties').orderBy('createdAt', 'desc').get().then(renderTable);
+        }
+
+        function renderTable(snapshot) {
+            let html = '';
+            let tRev = 0, tExp = 0, tCount = 0;
+
+            snapshot.docs.forEach(doc => {
+                const p = doc.data();
+                if (currentFilter !== 'All' && p.status !== currentFilter) return;
+
+                tRev += p.price;
+                tExp += p.expense;
+                tCount++;
+
+                const net = p.price - p.expense;
+
+                html += `
+                    <tr class="hover:bg-slate-700/30 transition">
+                        <td class="p-5">
+                            <div class="font-bold text-slate-100">${p.name}</div>
+                            <div class="text-xs text-slate-500 truncate w-48">${p.notes || 'No notes added'}</div>
+                        </td>
+                        <td class="p-5 text-center">
+                            <span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${
+                                p.status === 'Booked' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 
+                                p.status === 'Maintenance' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
+                                'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                            }">
+                                ${p.status}
+                            </span>
+                        </td>
+                        <td class="p-5 text-right font-mono font-bold ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}">
+                            ${net >= 0 ? '+' : ''}$${net.toLocaleString()}
+                        </td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('${doc.id}')" class="text-slate-600 hover:text-red-400 transition">
+                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html || '<tr><td colspan="4" class="p-10 text-center text-slate-500 italic">No records found for this view.</td></tr>';
+            updateUI(tCount, tRev, tExp);
+        }
+
+        function updateUI(count, rev, exp) {
+            document.getElementById('stat-total').innerText = count;
+            document.getElementById('stat-rev').innerText = `$${rev.toLocaleString()}`;
+            document.getElementById('stat-exp').innerText = `$${exp.toLocaleString()}`;
+            document.getElementById('stat-profit').innerText = `$${(rev - exp).toLocaleString()}`;
+        }
+
+        // CRUD: Delete
+        async function deleteEntry(id) {
+            if(confirm('Delete this record permanently?')) {
+                await db.collection('properties').doc(id).delete();
+            }
+        }
+
+        fetchAndRender();
+    </script>
+</body>
+</html>
